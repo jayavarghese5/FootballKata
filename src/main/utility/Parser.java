@@ -24,10 +24,10 @@ class PaserConfig{
 public class Parser {
     final PaserConfig paserConfig;
 
-    public <T extends Comparable<T>> T parseDataToObject(Function<String,T> parser, String filename) throws Exception {
+    public <T> T parseDataToObject( String filename) throws Exception {
         Stream<String> contents = getStream(filename);
-        List<T> list = cleanStream(contents).map(parser).sorted().collect(Collectors.toList());
-        return list.get(0);
+        List<Scores> list = cleanStream(contents).map(parserWithNonFunctionals).sorted(Comparator.comparingInt(s->s.getScore())).collect(Collectors.toList());
+        return (T)list.get(0);
     }
 
     private Stream<String> cleanStream(Stream<String> contents) {
@@ -54,6 +54,7 @@ public class Parser {
                 Scores score = score = new Scores();
                 score.setTeamName(value[paserConfig.teamname]);
                 score.setScore(Math.abs((Integer.valueOf(value[paserConfig.f])) - (Integer.valueOf(value[paserConfig.a]))));
+              //  System.out.println(score.toString());
                 assert(score.getTeamName()!=null);
                 return score;
 
