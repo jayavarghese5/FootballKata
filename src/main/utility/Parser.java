@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
@@ -22,9 +23,10 @@ class PaserConfig{
 @RequiredArgsConstructor
 public class Parser {
     final PaserConfig paserConfig;
-    public <T extends Comparable<T>> T parseDataToObject(Function<String,T> parser, String filename) throws Exception {
+
+    public <T extends Comparable<T>> T parseDataToObject(Function<String,T> parserWithNonFunctionals, String filename) throws Exception {
         Stream<String> contents = getStream(filename);
-        List<T> list = cleanStream(contents).map(parser).sorted().collect(Collectors.toList());
+        List<T> list = cleanStream(contents).map(parserWithNonFunctionals).sorted().collect(Collectors.toList());
         return list.get(0);
     }
 
@@ -36,16 +38,26 @@ public class Parser {
         return Files.lines(Paths.get(getClass().getClassLoader().getResource(filename).toURI()));
     }
 
+    <From,To>Function<From,To> addErrorMessage(Function<From,To> raw,String pattern){
+        return from->{try{
+            return raw.apply(from);
+        } catch (Exception e) {
+            throw new RuntimeException(MessageFormat.format(pattern,from));
+        }
+        };
+    }
+
+    Function<String,Scores> parserWithNonFunctionals= addErrorMessage(this::parse,"Error parsing line[{0}]");
+
     Scores parse(String line){
-            try {
                 String value[] = line.split("\\s+");
                 Scores score = score = new Scores();
                 score.setTeamName(value[paserConfig.teamname]);
                 score.setScore(Math.abs((Integer.valueOf(value[paserConfig.f])) - (Integer.valueOf(value[paserConfig.a]))));
                 assert(score.getTeamName()!=null);
                 return score;
-            } catch (Exception e) {
-                throw new RuntimeException("Parsing Error on line [" + line + "]");
-            }
+
     }
+
+
 }
