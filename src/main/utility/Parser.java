@@ -24,9 +24,9 @@ class PaserConfig{
 public class Parser {
     final PaserConfig paserConfig;
 
-    public <T extends Comparable<T>> T parseDataToObject(Function<String,T> parserWithNonFunctionals, String filename) throws Exception {
+    public <T extends Comparable<T>> T parseDataToObject(Function<String,T> parser, String filename) throws Exception {
         Stream<String> contents = getStream(filename);
-        List<T> list = cleanStream(contents).map(parserWithNonFunctionals).sorted().collect(Collectors.toList());
+        List<T> list = cleanStream(contents).map(parser).sorted().collect(Collectors.toList());
         return list.get(0);
     }
 
