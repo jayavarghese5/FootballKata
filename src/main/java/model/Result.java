@@ -7,7 +7,7 @@ import lombok.*;
 @ToString
 @Setter
 @Getter
-public class Scores<T> {
-    private T teamName;
-    private int score;
+public class Result<T> {
+    private T name;
+    private double difference;
 }

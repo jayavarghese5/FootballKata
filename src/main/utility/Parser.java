@@ -1,6 +1,5 @@
 import lombok.RequiredArgsConstructor;
-import lombok.val;
-import model.Scores;
+import model.Result;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,10 +14,12 @@ import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 class PaserConfig{
+    //Position of the headers
     public final int teamname;
     public final int f;
     public final int a;
     public static PaserConfig defaultConfig=new PaserConfig(2,7,9);
+    public static PaserConfig weatherConfig=new PaserConfig(1,2,3);
 }
 @RequiredArgsConstructor
 public class Parser {
@@ -26,7 +27,7 @@ public class Parser {
 
     public <T> T parseDataToObject( String filename) throws Exception {
         Stream<String> contents = getStream(filename);
-        List<Scores> list = cleanStream(contents).map(parserWithNonFunctionals).sorted(Comparator.comparingInt(s->s.getScore())).collect(Collectors.toList());
+        List<Result> list = cleanStream(contents).map(parserWithNonFunctionals).sorted(Comparator.comparingDouble(s->s.getDifference())).collect(Collectors.toList());
         return (T)list.get(0);
     }
 
@@ -47,15 +48,16 @@ public class Parser {
         };
     }
 
-    Function<String,Scores> parserWithNonFunctionals= addErrorMessage(this::parse,"Error parsing line[{0}]");
+    Function<String, Result> parserWithNonFunctionals= addErrorMessage(this::parse,"Error parsing line[{0}]");
 
-    Scores parse(String line){
+    Result parse(String line){
+                line=line.replace("*","");
                 String value[] = line.split("\\s+");
-                Scores score = score = new Scores();
-                score.setTeamName(value[paserConfig.teamname]);
-                score.setScore(Math.abs((Integer.valueOf(value[paserConfig.f])) - (Integer.valueOf(value[paserConfig.a]))));
-              //  System.out.println(score.toString());
-                assert(score.getTeamName()!=null);
+                Result score = score = new Result();
+                score.setName(value[paserConfig.teamname]);
+                score.setDifference(Math.abs((Double.valueOf(value[paserConfig.f])) - (Double.valueOf(value[paserConfig.a]))));
+                System.out.println(score.toString());
+                assert(score.getName()!=null);
                 return score;
 
     }
